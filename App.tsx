@@ -183,7 +183,7 @@ export default function App() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.toUpperCase() === "SENAI123") {
+    if (password.toUpperCase() === "ma662") {
       setIsAuthenticated(true);
       setLoginError(false);
     } else {
