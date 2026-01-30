@@ -1,32 +1,36 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ClassRoom, Student, Operation, DemonstrationStatus } from './types';
 import { INITIAL_CLASSES, INITIAL_OPERATIONS } from './constants';
-import { supabase } from './supabaseClient'; // Importando a conexão
+import { supabase } from './supabaseClient'; // Certifique-se que este arquivo existe com sua URL/Key
 import OperationCard from './components/OperationCard';
 import StudentChecklistModal from './components/StudentChecklistModal';
 import GeneralSummaryModal from './components/GeneralSummaryModal';
 
 const App: React.FC = () => {
+  // --- Autenticação ---
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const MASTER_PASSWORD = 'senai123'; 
 
+  // --- Estados do App ---
   const [classes] = useState<ClassRoom[]>(INITIAL_CLASSES);
   const [activeClassId, setActiveClassId] = useState<string>(INITIAL_CLASSES[0].id);
   const [operations] = useState<Operation[]>(INITIAL_OPERATIONS);
   const [students, setStudents] = useState<Student[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   
   const [selectedOp, setSelectedOp] = useState<Operation | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [newStudentName, setNewStudentName] = useState('');
 
-  // FUNÇÃO PARA CARREGAR DO SUPABASE
+  // CARREGAR DADOS DO SUPABASE
   const fetchStudents = async () => {
     setIsLoading(true);
     const { data, error } = await supabase.from('students').select('*');
-    if (!error && data) {
+    if (error) {
+      console.error("Erro ao buscar alunos:", error.message);
+    } else if (data) {
       setStudents(data);
     }
     setIsLoading(false);
@@ -43,15 +47,21 @@ const App: React.FC = () => {
                    .sort((a, b) => a.name.localeCompare(b.name));
   }, [students, activeClassId]);
 
-  const activeClass = useMemo(() => classes.find(c => c.id === activeClassId), [activeClassId, classes]);
+  const activeClass = useMemo(() => 
+    classes.find(c => c.id === activeClassId), 
+    [activeClassId, classes]
+  );
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput === MASTER_PASSWORD) setIsAuthenticated(true);
-    else { alert('Senha incorreta!'); setPasswordInput(''); }
+    if (passwordInput === MASTER_PASSWORD) {
+      setIsAuthenticated(true);
+    } else {
+      alert('Senha incorreta!');
+      setPasswordInput('');
+    }
   };
 
-  // ATUALIZAR STATUS NO SUPABASE
   const handleUpdateStatus = async (studentId: string, opId: string) => {
     const today = new Date();
     const formattedDate = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}`;
@@ -68,15 +78,18 @@ const App: React.FC = () => {
       }
     };
 
-    // Salva no banco
-    const { error } = await supabase.from('students').update({ demonstrations: newDemos }).eq('id', studentId);
-    
+    const { error } = await supabase
+      .from('students')
+      .update({ demonstrations: newDemos })
+      .eq('id', studentId);
+
     if (!error) {
       setStudents(prev => prev.map(s => s.id === studentId ? { ...s, demonstrations: newDemos } : s));
+    } else {
+      alert("Erro ao salvar: " + error.message);
     }
   };
 
-  // ADICIONAR ALUNO NO SUPABASE
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     const name = newStudentName.trim().toUpperCase();
@@ -94,6 +107,8 @@ const App: React.FC = () => {
     if (!error) {
       setStudents(prev => [...prev, newStudent]);
       setNewStudentName('');
+    } else {
+      alert("Erro ao adicionar aluno: " + error.message);
     }
   };
 
@@ -103,21 +118,50 @@ const App: React.FC = () => {
   };
 
   const onUpdateStudentName = async (id: string, newName: string) => {
-    const { error } = await supabase.from('students').update({ name: newName.toUpperCase() }).eq('id', id);
-    if (!error) setStudents(prev => prev.map(s => s.id === id ? { ...s, name: newName.toUpperCase() } : s));
+    const { error } = await supabase
+      .from('students')
+      .update({ name: newName.toUpperCase() })
+      .eq('id', id);
+    if (!error) {
+      setStudents(prev => prev.map(s => s.id === id ? { ...s, name: newName.toUpperCase() } : s));
+    }
   };
 
+  // --- TELA DE ACESSO RESTRITO ---
   if (!isAuthenticated) {
     return (
       <div className="fixed inset-0 bg-[#b91c1c] flex flex-col items-center justify-center p-4 z-[9999]">
         <div className="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-md text-center">
-          <div className="bg-[#cc1d1d] text-white px-6 py-2 inline-block font-black text-3xl italic skew-x-[-12deg] mb-8 shadow-md">SENAI</div>
-          <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-1">Acesso Restrito</h1>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10">Controle de Demonstrações</p>
-          <form onSubmit={handleLogin} className="space-y-6">
-            <input type="password" placeholder="DIGITE A SENHA" className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-center text-xl font-bold focus:outline-none" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} autoFocus />
-            <button type="submit" className="w-full h-16 bg-[#cc1d1d] text-white rounded-2xl font-black uppercase tracking-widest shadow-lg">Entrar no Sistema</button>
+          <div className="bg-[#cc1d1d] text-white px-6 py-2 inline-block font-black text-3xl italic skew-x-[-12deg] mb-8 shadow-md">
+            SENAI
+          </div>
+          <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-1">
+            Acesso Restrito
+          </h1>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10">
+            Controle de Demonstrações
+          </p>
+          <form onSubmit={handleLogin} className="space-y-6 text-left">
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase ml-4 mb-2 block">Senha de Acesso</label>
+              <input
+                type="password"
+                className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-center text-xl font-bold focus:outline-none"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <button 
+              type="submit"
+              className="w-full h-16 bg-[#cc1d1d] hover:bg-[#b01818] text-white rounded-2xl font-black uppercase tracking-widest shadow-lg transition-all"
+            >
+              Entrar no Sistema
+            </button>
           </form>
+          <p className="mt-12 text-[9px] font-black text-slate-300 uppercase tracking-tighter">
+            Somente pessoal autorizado • SMO V5 & V6
+          </p>
         </div>
       </div>
     );
@@ -125,18 +169,31 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans pb-20">
-      <header className="bg-[#004B95] h-24 flex items-center justify-between px-8 sticky top-0 z-50">
-        <div className="bg-[#E30613] text-white px-4 py-1 font-black text-xl italic shadow-lg">SENAI</div>
-        <div className="flex bg-black/20 p-1 rounded-xl gap-1">
-          {classes.map(c => (
-            <button key={c.id} onClick={() => setActiveClassId(c.id)} className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase ${activeClassId === c.id ? 'bg-white text-[#004B95]' : 'text-white/60'}`}>{c.name}</button>
-          ))}
+      <header className="bg-[#004B95] shadow-xl sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 h-24 flex items-center justify-between">
+          <div className="bg-[#E30613] text-white px-4 py-1 font-black text-xl italic shadow-lg">SENAI</div>
+          <div className="flex bg-black/20 p-1 rounded-xl gap-1">
+            {classes.map(c => (
+              <button
+                key={c.id}
+                onClick={() => setActiveClassId(c.id)}
+                className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${
+                  activeClassId === c.id ? 'bg-white text-[#004B95] shadow-lg' : 'text-white/60 hover:text-white'
+                }`}
+              >
+                {c.name}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-10">
         {isLoading ? (
-          <div className="text-center py-20 font-black text-slate-400 animate-pulse">CARREGANDO DADOS DA NUVEM...</div>
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+             <div className="w-12 h-12 border-4 border-[#004B95] border-t-transparent rounded-full animate-spin"></div>
+             <p className="font-black text-slate-400 uppercase italic">Sincronizando com a Nuvem...</p>
+          </div>
         ) : (
           <>
             <div className="mb-10 flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b-2 border-slate-200 pb-8">
@@ -148,8 +205,16 @@ const App: React.FC = () => {
                 </div>
               </div>
               <form onSubmit={handleAddStudent} className="flex gap-2">
-                <input type="text" value={newStudentName} onChange={(e) => setNewStudentName(e.target.value)} placeholder="NOME DO NOVO ALUNO..." className="bg-white border-2 border-slate-200 px-6 py-3 rounded-xl text-xs font-black uppercase w-64 focus:border-[#E30613] outline-none shadow-sm" />
-                <button type="submit" className="bg-[#E30613] text-white px-6 rounded-xl font-black text-xs uppercase shadow-lg">ADICIONAR</button>
+                <input 
+                  type="text" 
+                  value={newStudentName} 
+                  onChange={(e) => setNewStudentName(e.target.value)} 
+                  placeholder="NOME DO NOVO ALUNO..." 
+                  className="bg-white border-2 border-slate-200 px-6 py-3 rounded-xl text-xs font-black uppercase w-64 focus:border-[#E30613] outline-none shadow-sm" 
+                />
+                <button type="submit" className="bg-[#E30613] text-white px-6 rounded-xl font-black text-xs uppercase shadow-lg hover:brightness-110">
+                  ADICIONAR
+                </button>
               </form>
             </div>
 
@@ -169,10 +234,24 @@ const App: React.FC = () => {
       </main>
 
       {isModalOpen && selectedOp && (
-        <StudentChecklistModal operation={selectedOp} students={classStudents} onClose={() => setIsModalOpen(false)} onToggleStatus={handleUpdateStatus} onDeleteStudent={onDeleteStudent} onUpdateStudentName={onUpdateStudentName} />
+        <StudentChecklistModal 
+          operation={selectedOp} 
+          students={classStudents} 
+          onClose={() => setIsModalOpen(false)} 
+          onToggleStatus={(id) => handleUpdateStatus(id, selectedOp.id)} 
+          onDeleteStudent={onDeleteStudent} 
+          onUpdateStudentName={onUpdateStudentName} 
+        />
       )}
       {isSummaryOpen && (
-        <GeneralSummaryModal activeClass={activeClass!} students={classStudents} operations={operations} onClose={() => setIsSummaryOpen(false)} onDeleteStudent={onDeleteStudent} onUpdateStudentName={onUpdateStudentName} />
+        <GeneralSummaryModal 
+          activeClass={activeClass!} 
+          students={classStudents} 
+          operations={operations} 
+          onClose={() => setIsSummaryOpen(false)} 
+          onDeleteStudent={onDeleteStudent} 
+          onUpdateStudentName={onUpdateStudentName} 
+        />
       )}
     </div>
   );
