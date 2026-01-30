@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ClassRoom, Student, Operation, DemonstrationStatus } from './types';
 import { INITIAL_CLASSES, INITIAL_OPERATIONS } from './constants';
-import { supabase } from './supabaseClient'; // Certifique-se que este arquivo existe com sua URL/Key
+import { supabase } from './supabaseClient';
 import OperationCard from './components/OperationCard';
 import StudentChecklistModal from './components/StudentChecklistModal';
 import GeneralSummaryModal from './components/GeneralSummaryModal';
 
 const App: React.FC = () => {
-  // --- Autenticação ---
+  // --- Estados de Autenticação ---
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const MASTER_PASSWORD = 'senai123'; 
 
-  // --- Estados do App ---
+  // --- Estados do Aplicativo ---
   const [classes] = useState<ClassRoom[]>(INITIAL_CLASSES);
   const [activeClassId, setActiveClassId] = useState<string>(INITIAL_CLASSES[0].id);
   const [operations] = useState<Operation[]>(INITIAL_OPERATIONS);
@@ -24,12 +24,12 @@ const App: React.FC = () => {
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [newStudentName, setNewStudentName] = useState('');
 
-  // CARREGAR DADOS DO SUPABASE
+  // Buscar alunos do Supabase
   const fetchStudents = async () => {
     setIsLoading(true);
     const { data, error } = await supabase.from('students').select('*');
     if (error) {
-      console.error("Erro ao buscar alunos:", error.message);
+      console.error("Erro ao carregar dados:", error.message);
     } else if (data) {
       setStudents(data);
     }
@@ -78,15 +78,10 @@ const App: React.FC = () => {
       }
     };
 
-    const { error } = await supabase
-      .from('students')
-      .update({ demonstrations: newDemos })
-      .eq('id', studentId);
+    const { error } = await supabase.from('students').update({ demonstrations: newDemos }).eq('id', studentId);
 
     if (!error) {
       setStudents(prev => prev.map(s => s.id === studentId ? { ...s, demonstrations: newDemos } : s));
-    } else {
-      alert("Erro ao salvar: " + error.message);
     }
   };
 
@@ -107,8 +102,6 @@ const App: React.FC = () => {
     if (!error) {
       setStudents(prev => [...prev, newStudent]);
       setNewStudentName('');
-    } else {
-      alert("Erro ao adicionar aluno: " + error.message);
     }
   };
 
@@ -118,16 +111,11 @@ const App: React.FC = () => {
   };
 
   const onUpdateStudentName = async (id: string, newName: string) => {
-    const { error } = await supabase
-      .from('students')
-      .update({ name: newName.toUpperCase() })
-      .eq('id', id);
-    if (!error) {
-      setStudents(prev => prev.map(s => s.id === id ? { ...s, name: newName.toUpperCase() } : s));
-    }
+    const { error } = await supabase.from('students').update({ name: newName.toUpperCase() }).eq('id', id);
+    if (!error) setStudents(prev => prev.map(s => s.id === id ? { ...s, name: newName.toUpperCase() } : s));
   };
 
-  // --- TELA DE ACESSO RESTRITO ---
+  // --- Tela de Bloqueio ---
   if (!isAuthenticated) {
     return (
       <div className="fixed inset-0 bg-[#b91c1c] flex flex-col items-center justify-center p-4 z-[9999]">
@@ -141,12 +129,12 @@ const App: React.FC = () => {
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10">
             Controle de Demonstrações
           </p>
-          <form onSubmit={handleLogin} className="space-y-6 text-left">
-            <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase ml-4 mb-2 block">Senha de Acesso</label>
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="text-left">
+              <label className="text-[10px] font-black text-slate-400 uppercase ml-4 mb-2 block tracking-widest">Senha de Acesso</label>
               <input
                 type="password"
-                className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-center text-xl font-bold focus:outline-none"
+                className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-center text-xl font-bold focus:outline-none focus:ring-2 focus:ring-red-500/20"
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
                 autoFocus
@@ -154,7 +142,7 @@ const App: React.FC = () => {
             </div>
             <button 
               type="submit"
-              className="w-full h-16 bg-[#cc1d1d] hover:bg-[#b01818] text-white rounded-2xl font-black uppercase tracking-widest shadow-lg transition-all"
+              className="w-full h-16 bg-[#cc1d1d] hover:bg-[#b01818] text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-lg active:scale-95"
             >
               Entrar no Sistema
             </button>
@@ -170,8 +158,12 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-100 font-sans pb-20">
       <header className="bg-[#004B95] shadow-xl sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 h-24 flex items-center justify-between">
-          <div className="bg-[#E30613] text-white px-4 py-1 font-black text-xl italic shadow-lg">SENAI</div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-24 flex items-center justify-between">
+          <div className="bg-[#E30613] text-white px-4 py-1 font-black text-xl italic skew-x-[-12deg] shadow-lg">SENAI</div>
+          <div className="flex flex-col items-center flex-1">
+            <h1 className="text-white font-black text-xs sm:text-lg uppercase">Mecânico de Usinagem</h1>
+            <h2 className="text-white/70 font-black text-[10px] uppercase border-t border-white/20 pt-1">Convencional</h2>
+          </div>
           <div className="flex bg-black/20 p-1 rounded-xl gap-1">
             {classes.map(c => (
               <button
@@ -190,31 +182,20 @@ const App: React.FC = () => {
 
       <main className="max-w-7xl mx-auto px-6 py-10">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-             <div className="w-12 h-12 border-4 border-[#004B95] border-t-transparent rounded-full animate-spin"></div>
-             <p className="font-black text-slate-400 uppercase italic">Sincronizando com a Nuvem...</p>
-          </div>
+          <div className="text-center py-20 font-black text-slate-400 animate-pulse uppercase italic">Sincronizando com o Banco de Dados...</div>
         ) : (
           <>
             <div className="mb-10 flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b-2 border-slate-200 pb-8">
               <div>
-                <h2 className="text-4xl font-black text-slate-900 uppercase italic mb-4">{activeClass?.name}</h2>
+                <h2 className="text-4xl font-black text-slate-900 uppercase italic tracking-tighter mb-4">{activeClass?.name}</h2>
                 <div className="flex gap-2">
-                  <button onClick={() => setIsSummaryOpen(true)} className="bg-[#004B95] text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase">Painel Analítico</button>
-                  <button onClick={() => setIsAuthenticated(false)} className="bg-slate-300 text-slate-700 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase">Sair</button>
+                  <button onClick={() => setIsSummaryOpen(true)} className="bg-[#004B95] text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg">Painel Analítico</button>
+                  <button onClick={() => setIsAuthenticated(false)} className="bg-slate-300 text-slate-700 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest">Sair</button>
                 </div>
               </div>
               <form onSubmit={handleAddStudent} className="flex gap-2">
-                <input 
-                  type="text" 
-                  value={newStudentName} 
-                  onChange={(e) => setNewStudentName(e.target.value)} 
-                  placeholder="NOME DO NOVO ALUNO..." 
-                  className="bg-white border-2 border-slate-200 px-6 py-3 rounded-xl text-xs font-black uppercase w-64 focus:border-[#E30613] outline-none shadow-sm" 
-                />
-                <button type="submit" className="bg-[#E30613] text-white px-6 rounded-xl font-black text-xs uppercase shadow-lg hover:brightness-110">
-                  ADICIONAR
-                </button>
+                <input type="text" value={newStudentName} onChange={(e) => setNewStudentName(e.target.value)} placeholder="NOME DO NOVO ALUNO..." className="bg-white border-2 border-slate-200 px-6 py-3 rounded-xl text-xs font-black uppercase w-64 focus:border-[#E30613] outline-none shadow-sm" />
+                <button type="submit" className="bg-[#E30613] text-white px-6 rounded-xl font-black text-xs uppercase shadow-lg">ADICIONAR</button>
               </form>
             </div>
 
@@ -234,24 +215,10 @@ const App: React.FC = () => {
       </main>
 
       {isModalOpen && selectedOp && (
-        <StudentChecklistModal 
-          operation={selectedOp} 
-          students={classStudents} 
-          onClose={() => setIsModalOpen(false)} 
-          onToggleStatus={(id) => handleUpdateStatus(id, selectedOp.id)} 
-          onDeleteStudent={onDeleteStudent} 
-          onUpdateStudentName={onUpdateStudentName} 
-        />
+        <StudentChecklistModal operation={selectedOp} students={classStudents} onClose={() => setIsModalOpen(false)} onToggleStatus={(id) => handleUpdateStatus(id, selectedOp.id)} onDeleteStudent={onDeleteStudent} onUpdateStudentName={onUpdateStudentName} />
       )}
       {isSummaryOpen && (
-        <GeneralSummaryModal 
-          activeClass={activeClass!} 
-          students={classStudents} 
-          operations={operations} 
-          onClose={() => setIsSummaryOpen(false)} 
-          onDeleteStudent={onDeleteStudent} 
-          onUpdateStudentName={onUpdateStudentName} 
-        />
+        <GeneralSummaryModal activeClass={activeClass!} students={classStudents} operations={operations} onClose={() => setIsSummaryOpen(false)} onDeleteStudent={onDeleteStudent} onUpdateStudentName={onUpdateStudentName} />
       )}
     </div>
   );
