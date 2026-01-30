@@ -7,12 +7,10 @@ import StudentChecklistModal from './components/StudentChecklistModal';
 import GeneralSummaryModal from './components/GeneralSummaryModal';
 
 const App: React.FC = () => {
-  // --- Estados de Autenticação ---
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const MASTER_PASSWORD = 'senai123'; 
 
-  // --- Estados do Aplicativo ---
   const [classes] = useState<ClassRoom[]>(INITIAL_CLASSES);
   const [activeClassId, setActiveClassId] = useState<string>(INITIAL_CLASSES[0].id);
   const [operations] = useState<Operation[]>(INITIAL_OPERATIONS);
@@ -24,22 +22,17 @@ const App: React.FC = () => {
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [newStudentName, setNewStudentName] = useState('');
 
-  // Buscar alunos do Supabase
+  // Sincronizar com o Supabase
   const fetchStudents = async () => {
     setIsLoading(true);
     const { data, error } = await supabase.from('students').select('*');
-    if (error) {
-      console.error("Erro ao carregar dados:", error.message);
-    } else if (data) {
-      setStudents(data);
-    }
+    if (error) console.error("Erro Supabase:", error.message);
+    else if (data) setStudents(data);
     setIsLoading(false);
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchStudents();
-    }
+    if (isAuthenticated) fetchStudents();
   }, [isAuthenticated]);
 
   const classStudents = useMemo(() => {
@@ -47,19 +40,12 @@ const App: React.FC = () => {
                    .sort((a, b) => a.name.localeCompare(b.name));
   }, [students, activeClassId]);
 
-  const activeClass = useMemo(() => 
-    classes.find(c => c.id === activeClassId), 
-    [activeClassId, classes]
-  );
+  const activeClass = useMemo(() => classes.find(c => c.id === activeClassId), [activeClassId, classes]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput === MASTER_PASSWORD) {
-      setIsAuthenticated(true);
-    } else {
-      alert('Senha incorreta!');
-      setPasswordInput('');
-    }
+    if (passwordInput === MASTER_PASSWORD) setIsAuthenticated(true);
+    else { alert('Senha incorreta!'); setPasswordInput(''); }
   };
 
   const handleUpdateStatus = async (studentId: string, opId: string) => {
@@ -79,10 +65,7 @@ const App: React.FC = () => {
     };
 
     const { error } = await supabase.from('students').update({ demonstrations: newDemos }).eq('id', studentId);
-
-    if (!error) {
-      setStudents(prev => prev.map(s => s.id === studentId ? { ...s, demonstrations: newDemos } : s));
-    }
+    if (!error) setStudents(prev => prev.map(s => s.id === studentId ? { ...s, demonstrations: newDemos } : s));
   };
 
   const handleAddStudent = async (e: React.FormEvent) => {
@@ -98,10 +81,11 @@ const App: React.FC = () => {
     };
 
     const { error } = await supabase.from('students').insert([newStudent]);
-    
     if (!error) {
       setStudents(prev => [...prev, newStudent]);
       setNewStudentName('');
+    } else {
+      alert("Erro ao salvar no banco: " + error.message);
     }
   };
 
@@ -115,41 +99,22 @@ const App: React.FC = () => {
     if (!error) setStudents(prev => prev.map(s => s.id === id ? { ...s, name: newName.toUpperCase() } : s));
   };
 
-  // --- Tela de Bloqueio ---
+  // --- Tela de Bloqueio (Visual da Imagem) ---
   if (!isAuthenticated) {
     return (
       <div className="fixed inset-0 bg-[#b91c1c] flex flex-col items-center justify-center p-4 z-[9999]">
         <div className="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-md text-center">
-          <div className="bg-[#cc1d1d] text-white px-6 py-2 inline-block font-black text-3xl italic skew-x-[-12deg] mb-8 shadow-md">
-            SENAI
-          </div>
-          <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-1">
-            Acesso Restrito
-          </h1>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10">
-            Controle de Demonstrações
-          </p>
+          <div className="bg-[#cc1d1d] text-white px-6 py-2 inline-block font-black text-3xl italic skew-x-[-12deg] mb-8 shadow-md">SENAI</div>
+          <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-1">Acesso Restrito</h1>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10">Controle de Demonstrações</p>
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="text-left">
               <label className="text-[10px] font-black text-slate-400 uppercase ml-4 mb-2 block tracking-widest">Senha de Acesso</label>
-              <input
-                type="password"
-                className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-center text-xl font-bold focus:outline-none focus:ring-2 focus:ring-red-500/20"
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                autoFocus
-              />
+              <input type="password" className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-center text-xl font-bold focus:outline-none" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} autoFocus />
             </div>
-            <button 
-              type="submit"
-              className="w-full h-16 bg-[#cc1d1d] hover:bg-[#b01818] text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-lg active:scale-95"
-            >
-              Entrar no Sistema
-            </button>
+            <button type="submit" className="w-full h-16 bg-[#cc1d1d] text-white rounded-2xl font-black uppercase tracking-widest shadow-lg transition-all active:scale-95">Entrar no Sistema</button>
           </form>
-          <p className="mt-12 text-[9px] font-black text-slate-300 uppercase tracking-tighter">
-            Somente pessoal autorizado • SMO V5 & V6
-          </p>
+          <p className="mt-12 text-[9px] font-black text-slate-300 uppercase tracking-tighter">Somente pessoal autorizado • SMO V5 & V6</p>
         </div>
       </div>
     );
@@ -158,23 +123,11 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-100 font-sans pb-20">
       <header className="bg-[#004B95] shadow-xl sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-24 flex items-center justify-between">
-          <div className="bg-[#E30613] text-white px-4 py-1 font-black text-xl italic skew-x-[-12deg] shadow-lg">SENAI</div>
-          <div className="flex flex-col items-center flex-1">
-            <h1 className="text-white font-black text-xs sm:text-lg uppercase">Mecânico de Usinagem</h1>
-            <h2 className="text-white/70 font-black text-[10px] uppercase border-t border-white/20 pt-1">Convencional</h2>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 h-24 flex items-center justify-between">
+          <div className="bg-[#E30613] text-white px-4 py-1 font-black text-xl italic shadow-lg">SENAI</div>
           <div className="flex bg-black/20 p-1 rounded-xl gap-1">
             {classes.map(c => (
-              <button
-                key={c.id}
-                onClick={() => setActiveClassId(c.id)}
-                className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${
-                  activeClassId === c.id ? 'bg-white text-[#004B95] shadow-lg' : 'text-white/60 hover:text-white'
-                }`}
-              >
-                {c.name}
-              </button>
+              <button key={c.id} onClick={() => setActiveClassId(c.id)} className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${activeClassId === c.id ? 'bg-white text-[#004B95]' : 'text-white/60'}`}>{c.name}</button>
             ))}
           </div>
         </div>
@@ -182,14 +135,14 @@ const App: React.FC = () => {
 
       <main className="max-w-7xl mx-auto px-6 py-10">
         {isLoading ? (
-          <div className="text-center py-20 font-black text-slate-400 animate-pulse uppercase italic">Sincronizando com o Banco de Dados...</div>
+          <div className="text-center py-20 font-black text-slate-400 animate-pulse italic uppercase">Sincronizando com a Nuvem...</div>
         ) : (
           <>
             <div className="mb-10 flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b-2 border-slate-200 pb-8">
               <div>
                 <h2 className="text-4xl font-black text-slate-900 uppercase italic tracking-tighter mb-4">{activeClass?.name}</h2>
                 <div className="flex gap-2">
-                  <button onClick={() => setIsSummaryOpen(true)} className="bg-[#004B95] text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg">Painel Analítico</button>
+                  <button onClick={() => setIsSummaryOpen(true)} className="bg-[#004B95] text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest">Painel Analítico</button>
                   <button onClick={() => setIsAuthenticated(false)} className="bg-slate-300 text-slate-700 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest">Sair</button>
                 </div>
               </div>
