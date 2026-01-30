@@ -214,7 +214,7 @@ export default function App() {
               Acesso Restrito
             </h2>
             <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest mt-2">
-              Guia de Aprendizagem Profissional
+              Planos de Demonstrações
             </p>
           </div>
 
