@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ClassRoom, Student, Operation, DemonstrationStatus } from './types';
 import { INITIAL_CLASSES, INITIAL_OPERATIONS } from './constants';
-import { supabase } from './supabaseClient';
+import { supabase } from './lib/supabaseClient';
 import OperationCard from './components/OperationCard';
 import StudentChecklistModal from './components/StudentChecklistModal';
 import GeneralSummaryModal from './components/GeneralSummaryModal';
