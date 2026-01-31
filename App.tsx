@@ -1,121 +1,108 @@
 import React, { useState } from 'react';
 
-// --- COMPONENTES DE INTERFACE PADRONIZADOS ---
-
-const Header: React.FC<{ onHome: () => void; onLogout: () => void }> = ({ onHome, onLogout }) => (
-  <header className="bg-[#1e293b] border-b border-slate-700 p-4 sticky top-0 z-50">
-    <div className="flex justify-between items-center max-w-4xl mx-auto">
-      <div className="flex items-center gap-3" onClick={onHome}>
-        <div className="bg-[#E30613] text-white px-3 py-1 font-black text-xl italic skew-x-[-12deg]">
-          SENAI
-        </div>
-        <span className="text-white font-bold text-xs uppercase tracking-tight leading-none">
-          Mecânico de <br/> Usinagem
-        </span>
-      </div>
-      <button 
-        onClick={onLogout}
-        className="bg-slate-700/50 hover:bg-red-600 text-white p-3 rounded-full transition-colors"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7" />
-        </svg>
-      </button>
-    </div>
-  </header>
-);
+// Mock de dados baseado no print
+const OPERATIONS = [
+  { id: 1, name: "Plano de Demonstração", ref: "Ref 2540", category: "Usinagem", time: "20 min" },
+  { id: 2, name: "Planos de Demonstrações", ref: "Ref 2541", category: "Usinagem", time: "15 min" },
+  { id: 3, name: "Operação de Torno", ref: "Ref 2542", category: "Usinagem", time: "30 min" },
+];
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
 
-  // Estilo de fundo idêntico ao print: Cinza Escuro Azulado
-  const bgMain = "bg-[#0f172a]"; 
-
   if (!isAuthenticated) {
     return (
-      <div className={`min-h-screen ${bgMain} flex flex-col items-center justify-center p-6 font-sans`}>
-        <div className="w-full max-w-[320px] text-center">
-          {/* Logo Centralizada */}
-          <div className="inline-block bg-[#E30613] text-white px-6 py-2 font-black text-4xl italic skew-x-[-12deg] mb-8 shadow-2xl">
-            SENAI
-          </div>
-          
-          <h2 className="text-white text-lg font-bold mb-8 uppercase tracking-widest opacity-80">
-            Login de Acesso
-          </h2>
-
-          <form 
-            onSubmit={(e) => { e.preventDefault(); if(password.toUpperCase() === "SENAI123") setIsAuthenticated(true); }} 
-            className="space-y-4"
-          >
-            <div className="relative">
-              <input 
-                type="password" 
-                placeholder="Senha de Acesso"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-800/50 border border-slate-700 text-white text-center py-4 px-6 rounded-full outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-slate-500 font-medium"
-              />
+      <div className="min-h-screen bg-[#0a192f] flex items-center justify-center p-4">
+        <div className="w-full max-w-sm bg-white rounded-[30px] overflow-hidden shadow-2xl">
+          <div className="bg-[#004B95] p-10 text-center relative">
+            <div className="bg-[#E30613] inline-block px-6 py-2 skew-x-[-15deg] mb-4 shadow-lg">
+              <span className="text-white font-black text-3xl italic block skew-x-[15deg]">SENAI</span>
             </div>
-            
-            <button 
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-full shadow-lg shadow-blue-900/20 transition-all active:scale-95 uppercase text-sm tracking-wider"
-            >
-              Entrar no Sistema
+            <h2 className="text-white font-bold uppercase tracking-tighter text-sm">Acesso ao Sistema</h2>
+          </div>
+          <form 
+            className="p-8 space-y-4" 
+            onSubmit={(e) => { e.preventDefault(); if(password.toUpperCase()==="SENAI123") setIsAuthenticated(true); }}
+          >
+            <input 
+              type="password" 
+              placeholder="Senha" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-gray-100 border-none rounded-full py-4 px-6 text-center font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#004B95]"
+            />
+            <button className="w-full bg-[#004B95] text-white font-black py-4 rounded-full uppercase text-sm tracking-widest shadow-lg active:scale-95 transition-all">
+              Entrar
             </button>
           </form>
-
-          <p className="mt-12 text-slate-500 text-[10px] uppercase font-bold tracking-widest">
-            Departamento de Metalmecânica
-          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen ${bgMain} text-slate-200 font-sans`}>
-      <Header onHome={() => {}} onLogout={() => setIsAuthenticated(false)} />
-      
-      <main className="p-4 max-w-4xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-black text-white uppercase italic">
-            Planos de <span className="text-blue-500">Demonstração</span>
-          </h1>
-          <div className="h-1 w-12 bg-blue-500 mt-1"></div>
-        </div>
-
-        {/* Busca idêntica ao padrão mobile moderno */}
-        <div className="relative mb-6">
-          <input 
-            type="text" 
-            placeholder="Pesquisar operação..." 
-            className="w-full bg-slate-800/40 border border-slate-700 p-4 pl-12 rounded-2xl text-white outline-none focus:border-blue-500 transition-all shadow-inner"
-          />
-          <svg className="absolute left-4 top-4 h-5 w-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
-
-        {/* Grid de Cards Otimizado para 7 polegadas */}
-        <div className="grid grid-cols-1 gap-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-slate-800/30 border border-slate-700/50 p-5 rounded-2xl flex items-center justify-between active:bg-slate-700/40 transition-colors">
-              <div>
-                <span className="text-[10px] font-bold text-blue-400 uppercase tracking-tighter">Operação 0{i}</span>
-                <h3 className="text-white font-bold text-base uppercase leading-tight">Facear e Centrar</h3>
-              </div>
-              <div className="bg-blue-600/20 p-2 rounded-lg">
-                <svg className="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
+    <div className="min-h-screen bg-[#0a192f] p-4 font-sans">
+      <div className="max-w-md mx-auto bg-[#f8fafc] rounded-[40px] overflow-hidden shadow-2xl min-h-[90vh] flex flex-col">
+        
+        {/* Header Azul Arredondado igual ao print */}
+        <div className="bg-[#004B95] p-6 pb-12 rounded-b-[40px] relative">
+          <div className="flex justify-between items-start mb-6">
+            <div className="bg-[#E30613] px-4 py-1 skew-x-[-15deg] shadow-md">
+              <span className="text-white font-black text-xl italic block skew-x-[15deg]">SENAI</span>
             </div>
-          ))}
+            <button onClick={() => setIsAuthenticated(false)} className="text-white/50 font-bold text-[10px] uppercase">Sair</button>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="w-24 h-24 bg-white rounded-2xl p-2 shadow-inner flex items-center justify-center overflow-hidden border-2 border-slate-300">
+               {/* Simulação da imagem da peça que está no seu print */}
+               <div className="w-full h-full bg-slate-200 rounded-full border-4 border-slate-300 flex items-center justify-center">
+                  <div className="w-4 h-4 bg-slate-400 rounded-full"></div>
+               </div>
+            </div>
+            <div>
+              <h1 className="text-white font-black text-lg leading-tight uppercase">Mecânico de Usinagem<br/>Convencional</h1>
+              <p className="text-white/70 text-[10px] font-bold uppercase tracking-widest mt-1">Planos de Demonstrações</p>
+            </div>
+          </div>
         </div>
-      </main>
+
+        {/* Área de Conteúdo */}
+        <div className="px-4 -mt-6 flex-grow">
+          <div className="grid grid-cols-1 gap-4">
+            {OPERATIONS.map((op) => (
+              <div key={op.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col gap-2">
+                <div className="flex justify-between">
+                  <span className="bg-blue-100 text-[#004B95] text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-tighter">
+                    {op.category}
+                  </span>
+                  <span className="text-slate-400 text-[9px] font-bold">{op.ref}</span>
+                </div>
+                
+                <h3 className="text-slate-800 font-black text-sm uppercase leading-tight mt-1">
+                  {op.name}
+                </h3>
+
+                <div className="flex justify-between items-end mt-2 pt-2 border-t border-slate-50">
+                  <div className="text-[9px]">
+                    <p className="text-slate-400 font-bold uppercase italic">Tempo Estimado</p>
+                    <p className="font-black text-slate-700 uppercase italic leading-none">{op.time}</p>
+                  </div>
+                  <button className="bg-[#004B95] text-white text-[10px] font-black px-6 py-2 rounded-full uppercase italic shadow-md active:scale-95">
+                    Abrir
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer sutil */}
+        <footer className="p-6 text-center">
+          <div className="w-12 h-1 bg-slate-300 mx-auto rounded-full opacity-50"></div>
+        </footer>
+      </div>
     </div>
   );
 }
