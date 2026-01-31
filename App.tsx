@@ -10,6 +10,7 @@ const OPERATIONS = [
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(false);
 
   // --- TELA DE LOGIN ---
   if (!isAuthenticated) {
@@ -22,7 +23,7 @@ export default function App() {
               <span className="text-white font-black text-3xl italic block skew-x-[15deg]">SENAI</span>
             </div>
             
-            {/* Textos solicitados substituindo "Acesso ao Sistema" */}
+            {/* Títulos conforme solicitado */}
             <h2 className="text-white font-black uppercase tracking-tight text-lg leading-tight">
               MECÂNICO DE USINAGEM CONVENCIONAL
             </h2>
@@ -35,7 +36,13 @@ export default function App() {
             className="p-8 space-y-4" 
             onSubmit={(e) => { 
               e.preventDefault(); 
-              if(password.toUpperCase() === "SENAI123") setIsAuthenticated(true); 
+              // NOVA SENHA DEFINIDA: ianes662
+              if(password === "ianes662") {
+                setIsAuthenticated(true);
+                setError(false);
+              } else {
+                setError(true);
+              }
             }}
           >
             <div className="relative">
@@ -44,8 +51,9 @@ export default function App() {
                 placeholder="DIGITE A SENHA" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-100 border-none rounded-full py-4 px-6 text-center font-black text-slate-700 outline-none focus:ring-2 focus:ring-[#004B95] placeholder:text-slate-400"
+                className={`w-full bg-slate-100 border-none rounded-full py-4 px-6 text-center font-black text-slate-700 outline-none focus:ring-2 focus:ring-[#004B95] placeholder:text-slate-400 ${error ? 'ring-2 ring-red-500' : ''}`}
               />
+              {error && <p className="text-red-500 text-[10px] font-bold text-center mt-2 uppercase">Senha Incorreta</p>}
             </div>
             <button className="w-full bg-[#004B95] text-white font-black py-4 rounded-full uppercase text-sm tracking-widest shadow-lg active:scale-95 transition-all">
               Acessar
@@ -62,12 +70,15 @@ export default function App() {
       <div className="max-w-md mx-auto bg-[#f8fafc] rounded-[40px] overflow-hidden shadow-2xl min-h-[90vh] flex flex-col">
         
         {/* Header Azul Arredondado igual ao print 2 */}
-        <div className="bg-[#004B95] p-6 pb-12 rounded-b-[40px] relative">
+        <div className="bg-[#004B95] p-6 pb-12 rounded-b-[40px] relative shadow-lg">
           <div className="flex justify-between items-start mb-6">
             <div className="bg-[#E30613] px-4 py-1 skew-x-[-15deg] shadow-md">
               <span className="text-white font-black text-xl italic block skew-x-[15deg]">SENAI</span>
             </div>
-            <button onClick={() => setIsAuthenticated(false)} className="bg-white/10 p-2 rounded-full">
+            <button 
+              onClick={() => { setIsAuthenticated(false); setPassword(""); }} 
+              className="bg-white/10 p-2 rounded-full active:bg-white/30"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7" />
               </svg>
@@ -75,23 +86,22 @@ export default function App() {
           </div>
           
           <div className="flex items-center gap-4">
-            {/* Imagem da peça igual ao print */}
-            <div className="w-20 h-20 bg-white rounded-2xl p-2 shadow-inner flex items-center justify-center overflow-hidden border-2 border-slate-300">
-               <div className="w-full h-full bg-slate-200 rounded-full border-4 border-slate-300 flex items-center justify-center relative">
-                  <div className="w-4 h-4 bg-slate-400 rounded-full"></div>
-                  <div className="absolute inset-0 border-t-2 border-slate-400/30 rounded-full"></div>
+            <div className="w-20 h-20 bg-white rounded-2xl p-2 shadow-inner flex items-center justify-center overflow-hidden border-2 border-slate-200">
+               <div className="w-full h-full bg-slate-100 rounded-full border-4 border-slate-200 flex items-center justify-center relative">
+                  <div className="w-4 h-4 bg-slate-300 rounded-full"></div>
+                  <div className="absolute inset-0 border-t-2 border-slate-400/20 rounded-full"></div>
                </div>
             </div>
             <div>
               <h1 className="text-white font-black text-base leading-tight uppercase">Mecânico de Usinagem<br/>Convencional</h1>
-              <p className="text-white/60 text-[9px] font-bold uppercase tracking-widest mt-1">Planos de Demonstrações</p>
+              <p className="text-white/60 text-[9px] font-bold uppercase tracking-[0.1em] mt-1">Planos de Demonstrações</p>
             </div>
           </div>
         </div>
 
         {/* Lista de Operações */}
-        <div className="px-4 -mt-6 flex-grow">
-          <div className="grid grid-cols-1 gap-3">
+        <div className="px-4 -mt-6 flex-grow overflow-y-auto">
+          <div className="grid grid-cols-1 gap-3 pb-8">
             {OPERATIONS.map((op) => (
               <div key={op.id} className="bg-white rounded-2xl p-4 shadow-md border border-slate-100 flex flex-col">
                 <div className="flex justify-between items-start mb-2">
@@ -110,7 +120,7 @@ export default function App() {
                     <p className="text-slate-400 font-bold uppercase text-[8px] italic">Tempo Estimado</p>
                     <p className="font-black text-[#004B95] uppercase italic text-xs leading-none">{op.time}</p>
                   </div>
-                  <button className="bg-[#004B95] hover:bg-[#003d7a] text-white text-[10px] font-black px-8 py-2.5 rounded-full uppercase italic shadow-lg transition-transform active:scale-90">
+                  <button className="bg-[#004B95] text-white text-[10px] font-black px-8 py-2.5 rounded-full uppercase italic shadow-lg active:scale-90 transition-transform">
                     Abrir
                   </button>
                 </div>
@@ -119,8 +129,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* Barra de navegação inferior sutil */}
-        <footer className="p-4 flex justify-center">
+        {/* Home Indicator do Tablet */}
+        <footer className="p-4 flex justify-center bg-transparent">
           <div className="w-16 h-1.5 bg-slate-300 rounded-full opacity-30"></div>
         </footer>
       </div>
