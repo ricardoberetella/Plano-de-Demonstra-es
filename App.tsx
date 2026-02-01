@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Category, OperationPlan } from './types';
 import { OPERATIONS } from './data';
 
-// Componente de Detalhes (Original, sem mudanças de layout)
+// Componente de Detalhes (Restaurado para o layout original)
 const DetailView: React.FC<{ op: OperationPlan }> = ({ op }) => (
   <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
     <div className="bg-gray-900 p-8 text-white">
@@ -46,7 +46,7 @@ const DetailView: React.FC<{ op: OperationPlan }> = ({ op }) => (
       </section>
 
       <section>
-        <h3 className="flex items-center gap-3 text-lg font-black text-gray-800 uppercase mb-6 tracking-tighter">
+        <h3 className="flex items-center gap-3 text-lg font-black text-gray-800 uppercase mb-6 tracking-tighter text-red-600">
           <span className="w-2.5 h-8 bg-gray-800 rounded-full"></span>
           Motivação
         </h3>
@@ -134,7 +134,7 @@ const App: React.FC = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === '1234') {
+    if (password === 'ianes662') {
       setIsAuthenticated(true);
     }
   };
@@ -154,7 +154,7 @@ const App: React.FC = () => {
           </div>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 ml-1 tracking-widest">Senha</label>
+              <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 ml-1 tracking-widest">Senha de Acesso</label>
               <input 
                 type="password" 
                 value={password}
@@ -163,7 +163,7 @@ const App: React.FC = () => {
                 placeholder="••••"
               />
             </div>
-            <button className="w-full bg-[#ba1c1c] hover:bg-[#8e1515] text-white font-black py-4 rounded-xl shadow-lg transition-all uppercase tracking-widest text-sm">
+            <button className="w-full bg-[#ba1c1c] hover:bg-[#8e1515] text-white font-black py-4 rounded-xl shadow-lg transition-all uppercase tracking-widest text-sm active:scale-95">
               SENHA
             </button>
           </form>
@@ -181,11 +181,11 @@ const App: React.FC = () => {
               <span className="text-[#ba1c1c] font-black text-3xl px-1 tracking-tighter">SENAI</span>
             </div>
             <div>
-                <h1 className="text-xl font-bold leading-none uppercase tracking-tighter">MECÂNICO DE USINAGEM CONVENCIONAL</h1>
-                <p className="text-[10px] font-bold opacity-80 uppercase tracking-widest mt-1">PLANOS DE DEMONSTRAÇÕES</p>
+              <h1 className="text-xl font-bold leading-none uppercase tracking-tighter">MECÂNICO DE USINAGEM CONVENCIONAL</h1>
+              <p className="text-[10px] font-bold opacity-80 uppercase tracking-widest mt-1">PLANOS DE DEMONSTRAÇÕES</p>
             </div>
           </div>
-          <button onClick={() => setIsAuthenticated(false)} className="text-[10px] bg-black/20 px-4 py-2 rounded font-bold uppercase border border-white/20">Sair</button>
+          <button onClick={() => setIsAuthenticated(false)} className="text-[10px] bg-black/20 px-4 py-2 rounded font-bold uppercase border border-white/20 active:scale-95">Sair</button>
         </div>
       </header>
 
@@ -193,12 +193,12 @@ const App: React.FC = () => {
         {!selectedOp ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {OPERATIONS.map(op => (
-              <div key={op.id} onClick={() => setSelectedOp(op)} className="bg-white p-6 rounded-2xl border-2 border-gray-100 shadow-sm hover:border-[#ba1c1c] cursor-pointer transition-all">
+              <div key={op.id} onClick={() => setSelectedOp(op)} className="bg-white p-6 rounded-2xl border-2 border-gray-100 shadow-sm hover:border-[#ba1c1c] cursor-pointer transition-all active:scale-95">
                 <div className="flex justify-between items-start mb-4">
                   <span className="text-[10px] font-black bg-gray-100 px-3 py-1 rounded text-gray-500 uppercase">{op.category}</span>
                   <span className="text-[10px] font-bold text-[#ba1c1c]">{op.time}</span>
                 </div>
-                <h3 className="text-lg font-bold text-gray-800 leading-tight mb-4">{op.name}</h3>
+                <h3 className="text-lg font-bold text-gray-800 leading-tight mb-4 line-clamp-2">{op.name}</h3>
                 <div className="flex items-center gap-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                   <span>{op.taskNumber}</span>
                   <span>•</span>
@@ -209,8 +209,8 @@ const App: React.FC = () => {
           </div>
         ) : (
           <div>
-            <button onClick={() => setSelectedOp(null)} className="flex items-center gap-3 text-gray-400 hover:text-[#ba1c1c] font-black text-[10px] uppercase transition-all mb-8 bg-white px-6 py-4 rounded-xl border-2 border-gray-100 shadow-sm">
-              ← Menu Principal
+            <button onClick={() => setSelectedOp(null)} className="flex items-center gap-3 text-gray-400 hover:text-[#ba1c1c] font-black text-[10px] uppercase transition-all mb-8 bg-white px-6 py-4 rounded-xl border-2 border-gray-100 shadow-sm active:scale-95">
+              ← Voltar ao Menu
             </button>
             <DetailView op={selectedOp} />
           </div>
@@ -218,10 +218,10 @@ const App: React.FC = () => {
       </main>
 
       <footer className="bg-black text-white py-12 px-6 mt-10 print:hidden">
-        <div className="max-w-7xl mx-auto flex flex-col items-center">
-            <span className="text-white font-black text-5xl tracking-tighter">SENAI</span>
-            <p className="text-gray-600 font-bold uppercase tracking-[0.4em] text-[10px] mt-1">MECÂNICO DE USINAGEM CONVENCIONAL</p>
-            <p className="text-gray-700 text-[8px] mt-4 uppercase tracking-widest">PLANOS DE DEMONSTRAÇÕES</p>
+        <div className="max-w-7xl mx-auto flex flex-col items-center text-center">
+          <span className="text-white font-black text-5xl tracking-tighter">SENAI</span>
+          <p className="text-gray-600 font-bold uppercase tracking-[0.4em] text-[10px] mt-1">MECÂNICO DE USINAGEM CONVENCIONAL</p>
+          <p className="text-gray-700 text-[8px] mt-4 uppercase tracking-widest">PLANOS DE DEMONSTRAÇÕES © 2026</p>
         </div>
       </footer>
     </div>
