@@ -169,7 +169,7 @@ export const OPERATIONS: OperationPlan[] = [
   },
   {
     id: "v5-6",
-    name: "Tornear superficie cilindrica na placa unviersal e contraponta",
+    name: "Tornear superficie cil. na placa unviversal e contraponta",
     category: Category.Torneamento,
     reference: "6",
     taskNumber: "Tarefa 2",
